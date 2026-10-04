@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aegis Flow — Living System</title>
+  <meta name="description" content="Aegis Flow — a living system for project work, sprint progress, and demo readiness.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=20261004-reminders2">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2306b6d4'><path d='M13 2L3 14h9l-1 8 10-12h-9l1-8z'/></svg>">
+</head>
+<body>
+  <!-- Dynamic Ambient Canvas (Fluid organic blobs & ambient lighting) -->
+  <canvas id="ambientCanvas" class="ambient-canvas" aria-hidden="true"></canvas>
+
+  <div class="app-layout">
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+      <div class="brand">
+        <div class="brand-glyph">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">Aegis Flow</span>
+          <span class="brand-sub">LIQUID COMMAND CENTER</span>
+        </div>
+      </div>
+      <div class="mobile-actions">
+        <button id="mobilePaletteBtn" class="icon-btn" title="Open Command Palette (Ctrl+K)" aria-label="Open Command Palette">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+        <button class="icon-btn" aria-label="Toggle Navigation Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Sidebar Backdrop for mobile -->
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+    <!-- Premium Desktop & Tablet Sidebar -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-glyph">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <span class="brand-title">Aegis Flow</span>
+            <span class="brand-sub">LIQUID COMMAND CENTER</span>
+          </div>
+        </div>
+        <div class="brand-status-chip">
+          <span class="live-dot pulse"></span>
+          <span>LIVE</span>
+        </div>
+      </div>
+
+      <!-- Quick Command Trigger -->
+      <button id="sidebarCommandBtn" class="sidebar-cmd-trigger" title="Open Command Palette">
+        <span class="cmd-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </span>
+        <span class="cmd-placeholder">Search or jump to...</span>
+        <kbd class="cmd-kbd">Ctrl K</kbd>
+      </button>
+
+      <!-- Navigation Tree -->
+      <nav class="sidebar-nav">
+        <div class="nav-category">WORKSPACE</div>
+        <a href="#overview" class="nav-item active" data-nav="overview">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+          </svg>
+          <span>Overview</span>
+          <span class="nav-shortcut">1</span>
+        </a>
+        <a href="#board-section" class="nav-item" data-nav="board">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            <path d="m9 14 2 2 4-4"></path>
+          </svg>
+          <span>Sprint Board</span>
+          <span class="nav-badge" id="navTaskCount">0</span>
+        </a>
+        <a href="#timeline-section" class="nav-item" data-nav="timeline">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>Milestones</span>
+          <span class="nav-shortcut">3</span>
+        </a>
+        <a href="#readiness-section" class="nav-item" data-nav="readiness">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          <span>Demo Readiness</span>
+          <span class="nav-badge pill" id="navReadinessBadge">0%</span>
+        </a>
+        <a href="#notes-section" class="nav-item" data-nav="notes">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+          <span>Scratchpad</span>
+          <span class="nav-badge" id="navNotesCount">0</span>
+        </a>
+        <a href="#activity-section" class="nav-item" data-nav="activity">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          <span>Audit Feed</span>
+          <span class="nav-shortcut">6</span>
+        </a>
+      </nav>
+
+      <!-- Sidebar Progress & Velocity Metric -->
+      <div class="sidebar-velocity-card">
+        <div class="velocity-top">
+          <span class="velocity-title">Sprint Velocity</span>
+          <span class="velocity-val" id="sidebarProgressValue">0%</span>
+        </div>
+        <div class="velocity-track">
+          <div id="sidebarProgressBar" class="velocity-fill" style="width: 0%"></div>
+        </div>
+        <div class="velocity-stats">
+          <span id="sidebarProgressSubtitle">0 of 0 tasks done</span>
+          <span class="velocity-pace">Sprint progress</span>
+        </div>
+      </div>
+
+      <!-- Sidebar Footer Controls -->
+      <div class="sidebar-footer">
+        <button id="resetDemoBtn" class="sidebar-action-btn" title="Restore seed demo data">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+            <path d="M21 3v5h-5"></path>
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+            <path d="M8 16H3v5"></path>
+          </svg>
+          <span>Reset Demo State</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Stage -->
+    <main class="main-content">
+      <!-- Top Header Navigation Bar -->
+      <header class="top-nav-bar">
+        <a class="wordmark" href="#overview" aria-label="Aegis Flow, overview">AEGIS <i>FLOW</i></a>
+        <nav class="story-nav" aria-label="Main navigation">
+          <a href="#overview">Flow</a><a href="#board-section">Work</a><a href="#timeline-section">Signal</a><a href="#activity-section">Ship</a>
+        </nav>
+        <div class="nav-left">
+          <div class="breadcrumbs">
+              <span class="crumb-dim">GLOBAL AI HACKATHON '26</span>
+              <span class="crumb-sep">/</span>
+              <span class="crumb-dim">SPRINT 04</span>
+              <span class="crumb-sep">/</span>
+              <span class="crumb-active">PROJECT AEGIS</span>
+          </div>
+          <div class="sprint-health-indicator">
+            <span class="health-dot health-optimal"></span>
+            <span class="health-label" id="topHealthText">Project status: loading</span>
+          </div>
+        </div>
+
+        <div class="nav-right">
+          <!-- Quick search trigger -->
+          <div class="nav-search-wrapper" id="navSearchTrigger">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="globalSearchInput" placeholder="Search..." aria-label="Search">
+            <kbd class="shortcut-pill">Press /</kbd>
+          </div>
+
+          <!-- Contextual Action Buttons -->
+          <button id="openNewTaskModalBtn" class="action-btn action-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>New Task</span>
+          </button>
+
+          <button id="openNewNoteModalBtn" class="action-btn action-secondary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+            <span>Note</span>
+          </button>
+
+          <button id="openReminderCenterBtn" class="icon-action-btn reminder-bell-btn" title="Reminder center" aria-label="Reminder center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path>
+            </svg>
+            <span id="reminderCountBadge" class="reminder-count-badge" hidden>0</span>
+          </button>
+
+          <button id="openCommandPaletteBtn" class="icon-action-btn" title="Command Palette (Ctrl+K)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"></path>
+            </svg>
+          </button>
+          <button id="mobileMenuBtn" class="menu-trigger" aria-label="Open project controls">Controls <span>+</span></button>
+        </div>
+      </header>
+
+      <!-- Main Stage Body -->
+      <div class="content-container">
+
+        <!-- 1. CINEMATIC PRODUCT STATUS HERO AREA -->
+        <section class="hero-command-panel" id="overview">
+          <div class="hero-ambient-reflection"></div>
+          <div class="project-core" aria-label="Live project flow visualization">
+            <canvas id="projectCoreCanvas" aria-hidden="true"></canvas>
+            <div class="project-core-label">
+              <span class="core-caption">PROJECT PULSE</span>
+              <strong id="corePercentText">0%</strong>
+              <span class="core-state" id="coreStateText">SYNCING STATE</span>
+            </div>
+          </div>
+          
+          <div class="hero-meta-row">
+            <div class="hero-title-group">
+              <div class="hero-context-line">
+                <div class="hero-tag-strip">
+                <span class="status-pill status-active">
+                  <span class="status-live-pulse"></span>
+                  SPRINT 04 ACTIVE
+                </span>
+                <span class="status-pill status-hologram">AI AGENT ENGINE</span>
+                <span class="status-pill status-health" id="heroHealthText">READINESS: 0%</span>
+                </div>
+                <p class="hero-project-name">HHGoa '26<br><span class="hero-team-name">TEAM KOHINOOR</span></p>
+              </div>
+              <h1 class="hero-title">BUILD<br><em>IN MOTION.</em></h1>
+              <p class="hero-subtitle">
+                A system taking shape. Every moving part, converging on the October 6 code freeze.
+              </p>
+            </div>
+
+          </div>
+
+          <!-- Hero Metrics & HUD Countdown Grid -->
+          <div class="hero-metrics-grid">
+            <!-- Countdown Pod -->
+            <div class="hero-hud-card countdown-hud">
+              <div class="hud-header">
+                <div class="hud-label-wrap">
+                  <span class="hud-dot"></span>
+                  <span class="hud-label">CODE FREEZE COUNTDOWN</span>
+                </div>
+                <span class="hud-deadline-date" id="displayDeadlineShort">Oct 6, 2026</span>
+                <button id="openDeadlineModalBtn" class="deadline-edit-btn" title="Adjust Target Deadline" aria-label="Edit Target Deadline">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path><path d="m16.5 3.5 4 4"></path>
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Digital Countdown Clock -->
+              <div class="hud-timer-display">
+                <div class="hud-digit-box">
+                  <span id="timerDays" class="hud-digit font-mono">00</span>
+                  <span class="hud-unit">DAYS</span>
+                </div>
+                <span class="hud-colon">:</span>
+                <div class="hud-digit-box">
+                  <span id="timerHours" class="hud-digit font-mono">00</span>
+                  <span class="hud-unit">HOURS</span>
+                </div>
+                <span class="hud-colon">:</span>
+                <div class="hud-digit-box">
+                  <span id="timerMinutes" class="hud-digit font-mono">00</span>
+                  <span class="hud-unit">MINS</span>
+                </div>
+                <span class="hud-colon">:</span>
+                <div class="hud-digit-box highlight">
+                  <span id="timerSeconds" class="hud-digit font-mono">00</span>
+                  <span class="hud-unit">SECS</span>
+                </div>
+              </div>
+
+              <div class="hud-footer">
+                <span class="hud-target-text" id="displayDeadlineString">Target: Oct 6, 2026, 11:59 PM GMT+5:30</span>
+              </div>
+            </div>
+
+            <!-- Sprint Completion Progress Pod -->
+            <div class="hero-hud-card progress-hud">
+              <div class="hud-header">
+                <span class="hud-label">OVERALL SPRINT PROGRESS</span>
+                <span id="kpiCompletedFraction" class="hud-badge">0/0 Tasks</span>
+              </div>
+              <div class="hud-number-row">
+                <span id="kpiPercent" class="hud-number font-mono">0%</span>
+                <span class="hud-growth">completion</span>
+              </div>
+              <div class="hud-meter-track">
+                <div id="kpiProgressBar" class="hud-meter-fill" style="width: 0%"></div>
+              </div>
+              <div class="hud-stat-footer">
+                <span>In Flight: <strong id="kpiInProgress">0</strong></span>
+                <span>In Review: <strong id="kpiReview">0</strong></span>
+                <span>Backlog: <strong id="kpiTodo">0</strong></span>
+              </div>
+            </div>
+
+            <!-- Project Health Pod -->
+            <div class="hero-hud-card health-hud">
+              <div class="hud-header">
+                <span class="hud-label">SYSTEM & PIPELINE HEALTH</span>
+                <span class="hud-tag tag-emerald">LIVE STATE</span>
+              </div>
+              <div class="health-breakdown-list">
+                <div class="health-item">
+                  <span class="health-key">Active tasks</span>
+                  <span class="health-val font-mono" id="activeTasksContext">0</span>
+                </div>
+                <div class="health-item">
+                  <span class="health-key">Readiness</span>
+                  <span class="health-val font-mono" id="readinessContext">0%</span>
+                </div>
+                <div class="health-item">
+                  <span class="health-key">Tasks remaining</span>
+                  <span class="health-val font-mono" id="openTasksContext">0</span>
+                </div>
+              </div>
+              <div class="health-status-bar">
+                <div class="health-fill" style="width: 96%"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. HORIZONTAL HACKATHON SCHEDULE & MILESTONES -->
+        <section class="timeline-section-card" id="timeline-section">
+          <div class="section-title-bar">
+            <div>
+              <span class="eyebrow-tag">03 / SIGNAL</span>
+              <h2 class="block-title">Time, moving forward.</h2>
+            </div>
+            <div class="timeline-indicator-pill">
+              <span class="pulse-indicator"></span>
+              <span>Final deadline: <span id="timelineDeadlineText">Oct 6, 2026, 23:59 GMT+5:30</span></span>
+            </div>
+          </div>
+
+          <!-- Horizontal Visual Flow -->
+          <div class="horizontal-timeline-track">
+            <div class="timeline-step completed">
+              <div class="step-node">✓</div>
+              <div class="step-info">
+                <span class="step-phase">PHASE 1 • OCT 2</span>
+                <h4 class="step-title">Architecture & Specs</h4>
+                <p class="step-desc">Figma screens, schema design, tokens</p>
+              </div>
+            </div>
+            <div class="timeline-connector completed"></div>
+
+            <div class="timeline-step completed">
+              <div class="step-node">✓</div>
+              <div class="step-info">
+                <span class="step-phase">PHASE 2 • OCT 3</span>
+                <h4 class="step-title">Core Engine Build</h4>
+                <p class="step-desc">Streaming LLM client, pipeline bridge</p>
+              </div>
+            </div>
+            <div class="timeline-connector completed"></div>
+
+            <div class="timeline-step active">
+              <div class="step-node pulsing">3</div>
+              <div class="step-info">
+                <span class="step-phase">PHASE 3 • OCT 4 (CURRENT)</span>
+                <h4 class="step-title">Agentic Workflow & UI</h4>
+                <p class="step-desc">Kanban control, fluid canvas, memory</p>
+              </div>
+            </div>
+            <div class="timeline-connector"></div>
+
+            <div class="timeline-step">
+              <div class="step-node">4</div>
+              <div class="step-info">
+                <span class="step-phase">PHASE 4 • OCT 5</span>
+                <h4 class="step-title">Benchmarking & Stress</h4>
+                <p class="step-desc">Latency vectors, error bounds, pitch deck</p>
+              </div>
+            </div>
+            <div class="timeline-connector"></div>
+
+            <div class="timeline-step final">
+              <div class="step-node flag">🏁</div>
+              <div class="step-info">
+                <span class="step-phase">PHASE 5 • OCT 6 (23:59)</span>
+                <h4 class="step-title">Code Freeze & Submission</h4>
+                <p class="step-desc">Loom walkthrough, Devpost lock</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. SPRINT KANBAN BOARD (TO DO, IN PROGRESS, REVIEW, DONE) -->
+        <section class="board-section-wrapper" id="board-section">
+          <div class="section-title-bar">
+            <div>
+              <span class="eyebrow-tag">02 / WORK</span>
+              <h2 class="block-title">The work, in motion.</h2>
+            </div>
+
+            <!-- Board Controls & Filter Group -->
+            <div class="board-filter-toolbar">
+              <div class="filter-pill-container" role="tablist">
+                <button class="filter-pill active" data-filter="all">All (<span id="filterCountAll">0</span>)</button>
+                <button class="filter-pill" data-filter="urgent">Urgent</button>
+                <button class="filter-pill" data-filter="frontend">Frontend</button>
+                <button class="filter-pill" data-filter="backend">Backend & AI</button>
+                <button class="filter-pill" data-filter="pitch">Pitch & Demo</button>
+              </div>
+              <button id="boardQuickAddTaskBtn" class="action-btn action-primary btn-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Add Task</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 4-Column Board Grid -->
+          <div class="kanban-columns-grid">
+            <!-- Column 1: To-Do -->
+            <div class="kanban-col-wrapper" id="column-todo" data-status="todo">
+              <div class="col-bar-header">
+                <div class="col-title-left">
+                  <span class="col-dot dot-todo"></span>
+                  <h3 class="col-name">To Do</h3>
+                  <span class="col-count" id="count-todo">0</span>
+                </div>
+                <button class="col-add-trigger" data-add-status="todo" title="Add to To-Do" aria-label="Add task to To-Do">+</button>
+              </div>
+              <div class="cards-flow-area" id="cards-todo" data-status="todo">
+                <!-- Injected via JavaScript -->
+              </div>
+            </div>
+
+            <!-- Column 2: In-Progress -->
+            <div class="kanban-col-wrapper" id="column-in-progress" data-status="in-progress">
+              <div class="col-bar-header">
+                <div class="col-title-left">
+                  <span class="col-dot dot-in-progress"></span>
+                  <h3 class="col-name">In Progress</h3>
+                  <span class="col-count" id="count-in-progress">0</span>
+                </div>
+                <button class="col-add-trigger" data-add-status="in-progress" title="Add to In Progress" aria-label="Add task to In Progress">+</button>
+              </div>
+              <div class="cards-flow-area" id="cards-in-progress" data-status="in-progress">
+                <!-- Injected via JavaScript -->
+              </div>
+            </div>
+
+            <!-- Column 3: Review -->
+            <div class="kanban-col-wrapper" id="column-review" data-status="review">
+              <div class="col-bar-header">
+                <div class="col-title-left">
+                  <span class="col-dot dot-review"></span>
+                  <h3 class="col-name">Review & QA</h3>
+                  <span class="col-count" id="count-review">0</span>
+                </div>
+                <button class="col-add-trigger" data-add-status="review" title="Add to Review" aria-label="Add task to Review">+</button>
+              </div>
+              <div class="cards-flow-area" id="cards-review" data-status="review">
+                <!-- Injected via JavaScript -->
+              </div>
+            </div>
+
+            <!-- Column 4: Done -->
+            <div class="kanban-col-wrapper" id="column-done" data-status="done">
+              <div class="col-bar-header">
+                <div class="col-title-left">
+                  <span class="col-dot dot-done"></span>
+                  <h3 class="col-name">Done</h3>
+                  <span class="col-count" id="count-done">0</span>
+                </div>
+                <button class="col-add-trigger" data-add-status="done" title="Add to Done" aria-label="Add task to Done">+</button>
+              </div>
+              <div class="cards-flow-area" id="cards-done" data-status="done">
+                <!-- Injected via JavaScript -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. DEMO READINESS SECTION -->
+        <section class="readiness-card-panel" id="readiness-section">
+          <div class="section-title-bar">
+            <div>
+              <span class="eyebrow-tag">SIGNAL / READINESS</span>
+              <h2 class="block-title">What remains true.</h2>
+            </div>
+            <div class="readiness-metric-box">
+              <span class="readiness-percent" id="readinessScoreText">0% Complete</span>
+              <span class="readiness-count" id="readinessFractionText">0/5 items</span>
+            </div>
+          </div>
+
+          <p class="section-lead-text">
+            Mandatory criteria required for judging evaluation before code freeze cutoff at 11:59 PM GMT+5:30.
+          </p>
+
+          <div class="readiness-checklist-grid" id="checklistContainer">
+            <!-- Injected via JavaScript -->
+          </div>
+        </section>
+
+        <!-- 5. QUICK NOTES & BRAINSTORMING WORKSPACE -->
+        <section class="notes-workspace-panel" id="notes-section">
+          <div class="section-title-bar">
+            <div>
+              <span class="eyebrow-tag">FIELD NOTES</span>
+              <h2 class="block-title">Thoughts in the margins.</h2>
+            </div>
+            <button id="addNoteTriggerBtn" class="action-btn action-secondary btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Create Note</span>
+            </button>
+          </div>
+
+          <div class="notes-cards-grid" id="notesGrid">
+            <!-- Injected via JavaScript -->
+          </div>
+        </section>
+
+        <!-- 6. AUDIT FEED & RECENT ACTIVITY CENTER -->
+        <section class="activity-feed-panel" id="activity-section">
+          <div class="section-title-bar">
+            <div>
+              <span class="eyebrow-tag">04 / SHIP</span>
+              <h2 class="block-title">The final state.</h2>
+            </div>
+            <span class="ship-status" id="shipStatus">IN PROGRESS</span>
+          </div>
+
+          <div class="ship-summary" aria-label="Current project submission summary">
+            <div class="ship-summary-item"><span>Completion</span><strong id="shipCompletion">0%</strong></div>
+            <div class="ship-summary-item"><span>Demo readiness</span><strong id="shipReadiness">0%</strong></div>
+            <div class="ship-summary-item"><span>Active work</span><strong id="shipActive">0</strong></div>
+            <div class="ship-summary-item"><span>Tasks remaining</span><strong id="shipRemaining">0</strong></div>
+            <div class="ship-summary-item"><span>Submission deadline</span><strong id="shipDeadline">Oct 6, 2026</strong></div>
+          </div>
+
+          <div class="section-title-bar activity-subhead">
+            <div><span class="eyebrow-tag">RECENT ACTIVITY</span><h3 class="block-title">Sprint activity stream</h3></div>
+            <button id="clearActivityBtn" class="ghost-subtle-btn btn-sm">Clear Feed</button>
+          </div>
+
+          <div class="activity-stream-list" id="activityStreamContainer">
+            <!-- Injected via JavaScript -->
+          </div>
+        </section>
+
+        <footer class="page-footer">
+          <a href="#overview" aria-label="Aegis Flow overview">AEGIS FLOW</a>
+          <span class="footer-event-name"><span>HHGoa '26</span><span>TEAM KOHINOOR</span></span>
+          <a href="#overview" aria-label="Return to Overview">↑</a>
+        </footer>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- =========================================================================
+       RAYCAST-STYLE COMMAND PALETTE (Ctrl+K or /)
+       ========================================================================= -->
+  <div id="commandPalette" class="command-palette-overlay" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="command-palette-card">
+      <div class="cmd-input-bar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="paletteSearchInput" placeholder="Type a command or jump to section..." autocomplete="off">
+        <kbd class="palette-esc-kbd">ESC</kbd>
+      </div>
+
+      <div class="palette-results-list" id="paletteResultsList">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="palette-footer-bar">
+        <div class="palette-tip">
+          <kbd>↑</kbd> <kbd>↓</kbd> to navigate
+          <kbd>↵</kbd> to select
+          <kbd>esc</kbd> to close
+        </div>
+        <span class="palette-brand">Aegis Raycast Engine</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       TASK MODAL (CREATE / EDIT)
+       ========================================================================= -->
+  <div id="taskModal" class="modal-backdrop-layer" aria-hidden="true" role="dialog">
+    <div class="modal-surface-box">
+      <div class="modal-top-bar">
+        <div class="modal-heading-wrap">
+          <span class="modal-sub-label">TASK SPECIFICATION</span>
+          <h3 id="taskModalTitle" class="modal-primary-title">Create New Task</h3>
+        </div>
+        <button id="closeTaskModalBtn" class="modal-close-icon" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <form id="taskForm" class="modal-fields-form">
+        <input type="hidden" id="taskFormId" value="">
+
+        <div class="field-item">
+          <label for="taskTitleInput">Title <span class="req">*</span></label>
+          <input type="text" id="taskTitleInput" required placeholder="e.g. Implement streaming token parser with backoff" maxlength="90">
+        </div>
+
+        <div class="field-item">
+          <label for="taskDescInput">Description & Acceptance Criteria</label>
+          <textarea id="taskDescInput" rows="3" placeholder="Context, expected output, benchmarking criteria..."></textarea>
+        </div>
+
+        <div class="field-row">
+          <div class="field-item col-50">
+            <label>Stage Pipeline</label>
+            <div class="modal-stage-pill-selector" id="modalStageSwitcher">
+              <button type="button" class="stage-select-btn active" data-stage="todo">To Do</button>
+              <button type="button" class="stage-select-btn" data-stage="in-progress">In Progress</button>
+              <button type="button" class="stage-select-btn" data-stage="review">Review</button>
+              <button type="button" class="stage-select-btn" data-stage="done">Done</button>
+            </div>
+            <select id="taskStatusSelect" class="sr-only">
+              <option value="todo">To Do</option>
+              <option value="in-progress">In Progress</option>
+              <option value="review">Review</option>
+              <option value="done">Done</option>
+            </select>
+          </div>
+
+          <div class="field-item col-50">
+            <label for="taskPrioritySelect">Priority Level</label>
+            <select id="taskPrioritySelect">
+              <option value="urgent">Urgent (P0 - Blocker)</option>
+              <option value="high" selected>High (P1 - Core)</option>
+              <option value="medium">Medium (P2 - Feature)</option>
+              <option value="low">Low (P3 - Polish)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-item col-50">
+            <label for="taskTagSelect">Domain</label>
+            <select id="taskTagSelect">
+              <option value="AI / ML">AI & ML Pipeline</option>
+              <option value="Frontend">Frontend & UI</option>
+              <option value="Backend">Backend & Systems</option>
+              <option value="Design">Design & Ergonomics</option>
+              <option value="Pitch Deck">Pitch & Video</option>
+            </select>
+          </div>
+
+          <div class="field-item col-50">
+            <label for="taskAssigneeInput">Owner / Assignee</label>
+            <input type="text" id="taskAssigneeInput" placeholder="e.g. Devon K." maxlength="25">
+          </div>
+        </div>
+
+        <div class="modal-footer-actions">
+          <button type="button" id="cancelTaskBtn" class="pill-btn pill-subtle">Cancel</button>
+          <button type="submit" id="saveTaskBtn" class="action-btn action-primary">Save Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- REMINDER CENTER -->
+  <div id="reminderCenterModal" class="modal-backdrop-layer reminder-center-backdrop" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="reminderCenterTitle">
+    <section class="modal-surface-box reminder-center-surface">
+      <header class="modal-top-bar">
+        <div class="modal-heading-wrap">
+          <span class="modal-sub-label">AEGIS / REMINDERS</span>
+          <h2 id="reminderCenterTitle" class="modal-primary-title">Notification center</h2>
+        </div>
+        <div class="reminder-center-actions">
+          <button id="enableNotificationsBtn" type="button" class="pill-btn pill-subtle">Enable notifications</button>
+          <button id="closeReminderCenterBtn" type="button" class="modal-close-icon" aria-label="Close notification center">&times;</button>
+        </div>
+      </header>
+      <div class="reminder-center-toolbar">
+        <span id="reminderPermissionStatus" class="reminder-permission-status">Browser notifications are off</span>
+        <button id="newReminderBtn" type="button" class="action-btn action-primary">+ Reminder</button>
+      </div>
+      <div id="reminderList" class="reminder-list" aria-live="polite"></div>
+    </section>
+  </div>
+
+  <!-- REMINDER CREATE / EDIT -->
+  <div id="reminderModal" class="modal-backdrop-layer reminder-form-backdrop" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="reminderModalTitle">
+    <section class="modal-surface-box reminder-form-surface">
+      <header class="modal-top-bar">
+        <div class="modal-heading-wrap">
+          <span class="modal-sub-label">AEGIS / SCHEDULE</span>
+          <h2 id="reminderModalTitle" class="modal-primary-title">New reminder</h2>
+        </div>
+        <button id="closeReminderModalBtn" type="button" class="modal-close-icon" aria-label="Close reminder form">&times;</button>
+      </header>
+      <div class="reminder-ai-entry">
+        <label for="reminderNaturalInput">Ask Aegis</label>
+        <div class="reminder-ai-row">
+          <input id="reminderNaturalInput" type="text" placeholder="Remind me tomorrow at 7 PM to submit the project" autocomplete="off">
+          <button id="interpretReminderBtn" type="button" class="pill-btn pill-subtle">Review</button>
+        </div>
+        <p class="field-helper-note">Review Aegis's interpretation before saving.</p>
+        <div id="aiReminderPreview" class="ai-reminder-preview" hidden>
+          <div><span class="reminder-preview-label">PROPOSED REMINDER</span><strong id="aiReminderSummary"></strong></div>
+          <button id="confirmAiReminderBtn" type="button" class="action-btn action-primary">Confirm & create</button>
+        </div>
+      </div>
+      <div class="reminder-form-divider"><span>OR SET A SCHEDULE</span></div>
+      <form id="reminderForm" class="modal-fields-form">
+        <input type="hidden" id="reminderFormId" value="">
+        <div class="field-item">
+          <label for="reminderTitleInput">Reminder <span class="req">*</span></label>
+          <input id="reminderTitleInput" type="text" required maxlength="120" placeholder="What should Aegis remind you about?">
+        </div>
+        <div class="field-row">
+          <div class="field-item col-50">
+            <label for="reminderDateInput">Date & time <span class="req">*</span></label>
+            <input id="reminderDateInput" type="datetime-local" required>
+          </div>
+          <div class="field-item col-50">
+            <label for="reminderRepeatSelect">Repeat</label>
+            <select id="reminderRepeatSelect">
+              <option value="none">Does not repeat</option>
+              <option value="daily">Every day</option>
+              <option value="weekdays">Weekdays</option>
+              <option value="weekly">Every week</option>
+              <option value="monthly">Every month</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-item">
+          <label for="reminderTaskSelect">Attach to task</label>
+          <select id="reminderTaskSelect"><option value="">No task</option></select>
+        </div>
+        <div class="modal-footer-actions">
+          <button type="button" id="cancelReminderBtn" class="pill-btn pill-subtle">Cancel</button>
+          <button type="submit" class="action-btn action-primary">Save reminder</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <!-- =========================================================================
+       NOTE MODAL (CREATE / EDIT)
+       ========================================================================= -->
+  <div id="noteModal" class="modal-backdrop-layer" aria-hidden="true" role="dialog">
+    <div class="modal-surface-box">
+      <div class="modal-top-bar">
+        <div class="modal-heading-wrap">
+          <span class="modal-sub-label">SCRATCHPAD NOTE</span>
+          <h3 id="noteModalTitle" class="modal-primary-title">New Quick Note</h3>
+        </div>
+        <button id="closeNoteModalBtn" class="modal-close-icon" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <form id="noteForm" class="modal-fields-form">
+        <input type="hidden" id="noteFormId" value="">
+
+        <div class="field-item">
+          <label for="noteTitleInput">Title <span class="req">*</span></label>
+          <input type="text" id="noteTitleInput" required placeholder="e.g. Key Value Proposition for Judges" maxlength="70">
+        </div>
+
+        <div class="field-item">
+          <label for="noteBodyInput">Note Body <span class="req">*</span></label>
+          <textarea id="noteBodyInput" rows="4" required placeholder="Talking points, API keys, benchmarks, checklist notes..."></textarea>
+        </div>
+
+        <div class="field-row">
+          <div class="field-item col-60">
+            <label>Color Accent</label>
+            <div class="color-swatch-row">
+              <label class="swatch-item">
+                <input type="radio" name="noteColor" value="cyan" checked>
+                <span class="swatch-color swatch-cyan"></span>
+              </label>
+              <label class="swatch-item">
+                <input type="radio" name="noteColor" value="violet">
+                <span class="swatch-color swatch-violet"></span>
+              </label>
+              <label class="swatch-item">
+                <input type="radio" name="noteColor" value="magenta">
+                <span class="swatch-color swatch-magenta"></span>
+              </label>
+              <label class="swatch-item">
+                <input type="radio" name="noteColor" value="amber">
+                <span class="swatch-color swatch-amber"></span>
+              </label>
+              <label class="swatch-item">
+                <input type="radio" name="noteColor" value="emerald">
+                <span class="swatch-color swatch-emerald"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="field-item col-40">
+            <label class="checkbox-field-label">
+              <input type="checkbox" id="notePinnedInput">
+              <span class="checkbox-custom-ui"></span>
+              <span>Pin to top</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-footer-actions">
+          <button type="button" id="cancelNoteBtn" class="pill-btn pill-subtle">Cancel</button>
+          <button type="submit" class="action-btn action-primary">Save Note</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       DEADLINE MODAL (EDIT DEADLINE)
+       ========================================================================= -->
+  <div id="deadlineModal" class="modal-backdrop-layer" aria-hidden="true" role="dialog">
+    <div class="modal-surface-box">
+      <div class="modal-top-bar">
+        <div class="modal-heading-wrap">
+          <span class="modal-sub-label">COUNTDOWN SYNCHRONIZATION</span>
+          <h3 class="modal-primary-title">Edit Hackathon Deadline</h3>
+        </div>
+        <button id="closeDeadlineModalBtn" class="modal-close-icon" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <form id="deadlineForm" class="modal-fields-form">
+        <div class="field-item">
+          <label for="deadlineDatetimeInput">Submission Cutoff Date & Time <span class="req">*</span></label>
+          <input type="datetime-local" id="deadlineDatetimeInput" required>
+          <p class="field-helper-note">Synchronized to GMT+5:30. Default: October 6, 2026, 11:59:59 PM.</p>
+        </div>
+
+        <div class="preset-pill-strip">
+          <span class="preset-strip-label">Presets:</span>
+          <button type="button" class="preset-chip" id="presetDefaultBtn">Default (Oct 6, 23:59)</button>
+          <button type="button" class="preset-chip" data-hours="12">+12 Hours</button>
+          <button type="button" class="preset-chip" data-hours="24">+24 Hours</button>
+          <button type="button" class="preset-chip" data-hours="48">+48 Hours</button>
+        </div>
+
+        <div class="modal-footer-actions">
+          <button type="button" id="cancelDeadlineBtn" class="pill-btn pill-subtle">Cancel</button>
+          <button type="submit" class="action-btn action-primary">Update Deadline</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       DESTRUCTIVE ACTION CONFIRMATION MODAL
+       ========================================================================= -->
+  <div id="confirmModal" class="modal-backdrop-layer" aria-hidden="true" role="dialog">
+    <div class="modal-surface-box modal-confirm-box">
+      <div class="confirm-icon-wrap">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+      <h3 id="confirmModalTitle" class="confirm-title">Are you sure?</h3>
+      <p id="confirmModalDesc" class="confirm-desc">This action cannot be undone.</p>
+      <div class="confirm-actions">
+        <button type="button" id="confirmCancelBtn" class="pill-btn pill-subtle">Cancel</button>
+        <button type="button" id="confirmProceedBtn" class="action-btn action-danger">Confirm Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Hub -->
+  <div id="toastContainer" class="toast-hub" aria-live="polite"></div>
+
+  <script src="js/script.js?v=20261004-reminders2"></script>
+</body>
+</html>
