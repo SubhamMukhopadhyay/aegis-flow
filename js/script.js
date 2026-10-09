@@ -115,6 +115,15 @@
       priority: 'high',
       tag: 'Backend',
       assignee: 'Kartik'
+    },
+    {
+      id: 'task-10',
+      title: 'Launch Edisflow Sprint',
+      description: 'Coordinate final sprint release milestones, verify live deployments, and initiate the Edisflow sprint cycle.',
+      status: 'todo',
+      priority: 'urgent',
+      tag: 'Backend',
+      assignee: 'Kartik'
     }
   ];
 
@@ -429,6 +438,13 @@
             const task9 = DEFAULT_TASKS.find(t => t.id === 'task-9');
             if (task9) {
               tasks.push(JSON.parse(JSON.stringify(task9)));
+              updatedAssignees = true;
+            }
+          }
+          if (!tasks.some(t => t.id === 'task-10')) {
+            const task10 = DEFAULT_TASKS.find(t => t.id === 'task-10');
+            if (task10) {
+              tasks.push(JSON.parse(JSON.stringify(task10)));
               updatedAssignees = true;
             }
           }
