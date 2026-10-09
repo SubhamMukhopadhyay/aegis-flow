@@ -97,6 +97,24 @@
       priority: 'high',
       tag: 'Pitch Deck',
       assignee: 'Sharandeep Singh'
+    },
+    {
+      id: 'task-8',
+      title: 'Tune Wispr Flow voice prompt parser for live sprint command macros',
+      description: 'Calibrate hands-free voice intent recognition for real-time task generation, state changes, and sprint updates.',
+      status: 'in-progress',
+      priority: 'high',
+      tag: 'AI / ML',
+      assignee: 'Subham'
+    },
+    {
+      id: 'task-9',
+      title: 'Configure production CDN caching and SSL certificates for fast edge delivery',
+      description: 'Optimize asset compression, edge headers, and route fallbacks to guarantee instant load times across all devices.',
+      status: 'todo',
+      priority: 'high',
+      tag: 'Backend',
+      assignee: 'Kartik'
     }
   ];
 
@@ -398,6 +416,23 @@
               updatedAssignees = true;
             }
           });
+
+          // Ensure task-8 (Subham - high priority) and task-9 (Kartik - high priority) exist
+          if (!tasks.some(t => t.id === 'task-8')) {
+            const task8 = DEFAULT_TASKS.find(t => t.id === 'task-8');
+            if (task8) {
+              tasks.push(JSON.parse(JSON.stringify(task8)));
+              updatedAssignees = true;
+            }
+          }
+          if (!tasks.some(t => t.id === 'task-9')) {
+            const task9 = DEFAULT_TASKS.find(t => t.id === 'task-9');
+            if (task9) {
+              tasks.push(JSON.parse(JSON.stringify(task9)));
+              updatedAssignees = true;
+            }
+          }
+
           if (updatedAssignees) saveTasks();
         } catch (e) {
           tasks = JSON.parse(JSON.stringify(DEFAULT_TASKS));

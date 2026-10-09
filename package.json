@@ -1,0 +1,17 @@
+{
+  "name": "aegis-flow",
+  "version": "1.0.0",
+  "description": "A high-performance sprint command center and project workspace built with Wispr Flow.",
+  "scripts": {
+    "build": "node build.js",
+    "test": "node --check js/script.js"
+  },
+  "keywords": [
+    "wispr-flow",
+    "sprint",
+    "kanban",
+    "hackathon"
+  ],
+  "author": "Subham Mukhopadhyay, Kartik, Sharandeep Singh (Team Kohinoor)",
+  "license": "MIT"
+}
