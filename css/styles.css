@@ -359,6 +359,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .hero-ambient-reflection{display:none}
 .hero-project-name .hero-team-name{display:inline-block;padding:8px 0 0;color:var(--text-secondary)}
 .footer-event-name{display:grid;gap:8px;text-align:center}
+.footer-credit{text-align:center;color:var(--text-secondary);line-height:1.4}
 
 /* Reminder center and scheduling */
 .reminder-bell-btn{position:relative;min-width:36px;width:36px;height:36px;padding:0}
