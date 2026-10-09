@@ -415,7 +415,8 @@
         saveActivity();
       } else {
         try {
-          activity = JSON.parse(storedActivity);
+          const parsed = JSON.parse(storedActivity);
+          activity = Array.isArray(parsed) ? parsed : JSON.parse(JSON.stringify(DEFAULT_ACTIVITY));
         } catch (e) {
           activity = JSON.parse(JSON.stringify(DEFAULT_ACTIVITY));
         }
@@ -426,6 +427,11 @@
         activityFilter = storedActivityFilter;
       } else {
         activityFilter = 'all';
+      }
+
+      if (activity.length === 0) {
+        activityFilter = 'all';
+        saveActivityFilter();
       }
 
       try {
@@ -494,11 +500,19 @@
       text,
       type,
       time: 'Just now',
+      timestamp: Date.now(),
       action: resolvedAction
     };
     activity.unshift(newEntry);
     if (activity.length > 20) activity.pop();
     saveActivity();
+
+    // If current filter would hide this new activity, switch back to 'all' so it is immediately visible
+    if (activityFilter !== 'all' && activityFilter !== resolvedAction) {
+      activityFilter = 'all';
+      saveActivityFilter();
+    }
+
     renderActivity();
   }
 
@@ -1328,11 +1342,27 @@
     });
   }
 
+  function formatRelativeTime(item) {
+    if (item && item.timestamp) {
+      const diffSec = Math.max(0, Math.floor((Date.now() - item.timestamp) / 1000));
+      if (diffSec < 60) return 'Just now';
+      const diffMin = Math.floor(diffSec / 60);
+      if (diffMin < 60) return `${diffMin}m ago`;
+      const diffHr = Math.floor(diffMin / 60);
+      if (diffHr < 24) return `${diffHr}h ago`;
+      const diffDays = Math.floor(diffHr / 24);
+      return `${diffDays}d ago`;
+    }
+    return item && item.time ? item.time : 'recent';
+  }
+
   function updateActivityFilterUI() {
     const pills = document.querySelectorAll('[data-activity-filter]');
     pills.forEach(pill => {
       const pillFilter = pill.getAttribute('data-activity-filter');
-      pill.classList.toggle('active', pillFilter === activityFilter);
+      const isActive = pillFilter === activityFilter;
+      pill.classList.toggle('active', isActive);
+      pill.setAttribute('aria-selected', isActive ? 'true' : 'false');
     });
   }
 
@@ -1341,6 +1371,15 @@
     saveActivityFilter();
     renderActivity();
     showToast(`Activity filter: ${filterName.toUpperCase()}`, 'toast-info');
+  }
+
+  function clearActivityFeed() {
+    activity = [];
+    activityFilter = 'all';
+    saveActivity();
+    saveActivityFilter();
+    renderActivity();
+    showToast('Activity stream cleared', 'toast-info');
   }
 
   // --- ACTIVITY FEED RENDERING ---
@@ -1376,7 +1415,7 @@
       row.innerHTML = `
         <div class="activity-icon-badge badge-${item.type || 'cyan'}">⚡</div>
         <div class="activity-content">${item.text}</div>
-        <div class="activity-timestamp">${escapeHtml(item.time || 'recent')}</div>
+        <div class="activity-timestamp">${escapeHtml(formatRelativeTime(item))}</div>
       `;
       dom.activityStreamContainer.appendChild(row);
     });
@@ -1398,7 +1437,7 @@
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 200);
       showToast('Activity feed exported as JSON', 'toast-success');
     } catch (err) {
       console.error('Export error:', err);
@@ -1513,6 +1552,7 @@
     { id: 'act-filter-urgent', group: 'Filters', title: 'Filter Urgent / High Priority Tasks', icon: '🔥', run: () => setFilter('urgent') },
     { id: 'act-filter-all', group: 'Filters', title: 'Show All Tasks', icon: '👁️', run: () => setFilter('all') },
     { id: 'act-export-activity', group: 'Actions', title: 'Export Activity Stream as JSON', icon: '📥', run: exportActivityFeed },
+    { id: 'act-clear-activity', group: 'Actions', title: 'Clear Activity Stream Feed', icon: '🧹', run: clearActivityFeed },
     { id: 'act-reset-demo', group: 'Danger Zone', title: 'Reset Demo State to Default', icon: '↺', run: resetToDefaults }
   ];
 
@@ -2240,12 +2280,7 @@
     dom.resetDemoBtn.addEventListener('click', resetToDefaults);
 
     // Clear Activity Feed
-    dom.clearActivityBtn.addEventListener('click', () => {
-      activity = [];
-      saveActivity();
-      renderActivity();
-      showToast('Activity stream cleared', 'toast-info');
-    });
+    dom.clearActivityBtn.addEventListener('click', clearActivityFeed);
 
     // Export Activity Feed
     if (dom.exportActivityBtn) {

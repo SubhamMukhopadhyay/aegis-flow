@@ -582,7 +582,7 @@
           <div class="section-title-bar activity-subhead">
             <div><span class="eyebrow-tag">RECENT ACTIVITY</span><h3 class="block-title">Sprint activity stream</h3></div>
             <div class="activity-header-actions">
-              <button id="exportActivityBtn" class="action-btn action-secondary btn-sm" title="Export activity stream as JSON">
+              <button id="exportActivityBtn" type="button" class="action-btn action-secondary btn-sm" title="Export activity stream as JSON">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                   <polyline points="7 10 12 15 17 10"></polyline>
@@ -590,18 +590,18 @@
                 </svg>
                 <span>Export JSON</span>
               </button>
-              <button id="clearActivityBtn" class="ghost-subtle-btn btn-sm">Clear Feed</button>
+              <button id="clearActivityBtn" type="button" class="ghost-subtle-btn btn-sm">Clear Feed</button>
             </div>
           </div>
 
           <div class="activity-filter-toolbar">
             <div class="filter-pill-container" id="activityFilterContainer" role="tablist" aria-label="Filter activity stream">
-              <button class="filter-pill active" data-activity-filter="all">All</button>
-              <button class="filter-pill" data-activity-filter="created">Created</button>
-              <button class="filter-pill" data-activity-filter="edited">Edited</button>
-              <button class="filter-pill" data-activity-filter="moved">Moved</button>
-              <button class="filter-pill" data-activity-filter="completed">Completed</button>
-              <button class="filter-pill" data-activity-filter="deleted">Deleted</button>
+              <button type="button" class="filter-pill active" data-activity-filter="all" role="tab" aria-selected="true">All</button>
+              <button type="button" class="filter-pill" data-activity-filter="created" role="tab" aria-selected="false">Created</button>
+              <button type="button" class="filter-pill" data-activity-filter="edited" role="tab" aria-selected="false">Edited</button>
+              <button type="button" class="filter-pill" data-activity-filter="moved" role="tab" aria-selected="false">Moved</button>
+              <button type="button" class="filter-pill" data-activity-filter="completed" role="tab" aria-selected="false">Completed</button>
+              <button type="button" class="filter-pill" data-activity-filter="deleted" role="tab" aria-selected="false">Deleted</button>
             </div>
           </div>
 
