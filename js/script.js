@@ -26,6 +26,7 @@
     CHECKLIST: 'aegis_checklist_v3',
     ACTIVITY: 'aegis_activity_v3',
     ACTIVITY_FILTER: 'aegis_activity_filter_v1',
+    BOARD_FILTER: 'aegis_board_filter_v1',
     REMINDERS: 'aegis_reminders_v1'
   };
 
@@ -41,7 +42,7 @@
       status: 'done',
       priority: 'high',
       tag: 'Design',
-      assignee: 'Elena Rostova'
+      assignee: 'Subham'
     },
     {
       id: 'task-2',
@@ -50,16 +51,16 @@
       status: 'done',
       priority: 'medium',
       tag: 'Backend',
-      assignee: 'Marcus Chen'
+      assignee: 'Kartik'
     },
     {
       id: 'task-3',
       title: 'Integrate real-time streaming LLM agent coordinator',
-      description: 'Implement WebSocket backoff pipeline, structured JSON output validation, and streaming token parser.',
+      description: 'Implement WebSocket backoff pipeline, structured JSON output validation, and streaming token parser via Wispr Flow.',
       status: 'review',
       priority: 'urgent',
       tag: 'AI / ML',
-      assignee: 'Devon K.'
+      assignee: 'Subham'
     },
     {
       id: 'task-4',
@@ -68,7 +69,7 @@
       status: 'in-progress',
       priority: 'high',
       tag: 'Frontend',
-      assignee: 'Elena Rostova'
+      assignee: 'Subham'
     },
     {
       id: 'task-5',
@@ -77,7 +78,7 @@
       status: 'in-progress',
       priority: 'medium',
       tag: 'AI / ML',
-      assignee: 'Devon K.'
+      assignee: 'Kartik'
     },
     {
       id: 'task-6',
@@ -86,7 +87,7 @@
       status: 'todo',
       priority: 'urgent',
       tag: 'Pitch Deck',
-      assignee: 'Sarah Lin'
+      assignee: 'Team Kohinoor'
     },
     {
       id: 'task-7',
@@ -95,7 +96,7 @@
       status: 'todo',
       priority: 'high',
       tag: 'Pitch Deck',
-      assignee: 'Sarah Lin'
+      assignee: 'Sharandeep Singh'
     }
   ];
 
@@ -369,6 +370,35 @@
         try {
           const parsedTasks = JSON.parse(storedTasks);
           tasks = Array.isArray(parsedTasks) ? parsedTasks : JSON.parse(JSON.stringify(DEFAULT_TASKS));
+          // Migrate demo tasks with legacy names to Subham and Kartik
+          let updatedAssignees = false;
+          tasks.forEach(t => {
+            if (t.id === 'task-1' && (t.assignee === 'Elena Rostova' || !t.assignee)) {
+              t.assignee = 'Subham';
+              updatedAssignees = true;
+            }
+            if (t.id === 'task-2' && (t.assignee === 'Marcus Chen' || !t.assignee)) {
+              t.assignee = 'Kartik';
+              updatedAssignees = true;
+            }
+            if (t.id === 'task-3' && (t.assignee === 'Devon K.' || !t.assignee)) {
+              t.assignee = 'Subham';
+              updatedAssignees = true;
+            }
+            if (t.id === 'task-4' && (t.assignee === 'Elena Rostova' || !t.assignee)) {
+              t.assignee = 'Subham';
+              updatedAssignees = true;
+            }
+            if (t.id === 'task-5' && (t.assignee === 'Devon K.' || !t.assignee)) {
+              t.assignee = 'Kartik';
+              updatedAssignees = true;
+            }
+            if (t.id === 'task-7' && (t.assignee === 'Sarah Lin' || !t.assignee)) {
+              t.assignee = 'Sharandeep Singh';
+              updatedAssignees = true;
+            }
+          });
+          if (updatedAssignees) saveTasks();
         } catch (e) {
           tasks = JSON.parse(JSON.stringify(DEFAULT_TASKS));
           saveTasks();
@@ -435,6 +465,13 @@
         saveActivityFilter();
       }
 
+      const storedBoardFilter = localStorage.getItem(STORAGE_KEYS.BOARD_FILTER);
+      if (storedBoardFilter && ['all', 'urgent', 'frontend', 'backend', 'pitch'].includes(storedBoardFilter)) {
+        activeFilter = storedBoardFilter;
+      } else {
+        activeFilter = 'all';
+      }
+
       try {
         const storedReminders = localStorage.getItem(STORAGE_KEYS.REMINDERS);
         reminders = storedReminders ? JSON.parse(storedReminders) : [];
@@ -478,6 +515,10 @@
 
   function saveActivityFilter() {
     try { localStorage.setItem(STORAGE_KEYS.ACTIVITY_FILTER, activityFilter); } catch (e) { console.error(e); }
+  }
+
+  function saveBoardFilter() {
+    try { localStorage.setItem(STORAGE_KEYS.BOARD_FILTER, activeFilter); } catch (e) { console.error(e); }
   }
 
   function saveReminders() {
@@ -529,6 +570,7 @@
         checklist = JSON.parse(JSON.stringify(DEFAULT_CHECKLIST));
         activity = JSON.parse(JSON.stringify(DEFAULT_ACTIVITY));
         activityFilter = 'all';
+        activeFilter = 'all';
         reminders = [];
 
         saveTasks();
@@ -537,6 +579,7 @@
         saveChecklist();
         saveActivity();
         saveActivityFilter();
+        saveBoardFilter();
         saveReminders();
 
         renderAll();
@@ -776,7 +819,16 @@
   }
 
   // --- KANBAN RENDERING (TO DO, IN PROGRESS, REVIEW, DONE) ---
+  function updateBoardFilterUI() {
+    dom.filterPills.forEach(p => {
+      const isActive = p.getAttribute('data-filter') === activeFilter;
+      p.classList.toggle('active', isActive);
+      p.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+  }
+
   function renderKanban() {
+    updateBoardFilterUI();
     const query = searchQuery.trim().toLowerCase();
 
     const filtered = tasks.filter(task => {
@@ -1736,7 +1788,8 @@
 
   function setFilter(filterName) {
     activeFilter = filterName;
-    dom.filterPills.forEach(p => p.classList.toggle('active', p.getAttribute('data-filter') === filterName));
+    saveBoardFilter();
+    updateBoardFilterUI();
     renderKanban();
     showToast(`Task filter: ${filterName.toUpperCase()}`, 'toast-info');
   }
