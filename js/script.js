@@ -360,19 +360,61 @@
   function loadData() {
     try {
       const storedTasks = localStorage.getItem(STORAGE_KEYS.TASKS);
-      tasks = storedTasks ? JSON.parse(storedTasks) : [...DEFAULT_TASKS];
+      if (storedTasks === null) {
+        // First visit with no saved data: populate with demo tasks so the board is never empty
+        tasks = JSON.parse(JSON.stringify(DEFAULT_TASKS));
+        saveTasks();
+      } else {
+        try {
+          const parsedTasks = JSON.parse(storedTasks);
+          tasks = Array.isArray(parsedTasks) ? parsedTasks : JSON.parse(JSON.stringify(DEFAULT_TASKS));
+        } catch (e) {
+          tasks = JSON.parse(JSON.stringify(DEFAULT_TASKS));
+          saveTasks();
+        }
+      }
 
       const storedDeadline = localStorage.getItem(STORAGE_KEYS.DEADLINE);
       deadline = storedDeadline ? new Date(storedDeadline) : new Date(DEFAULT_DEADLINE_ISO);
 
       const storedNotes = localStorage.getItem(STORAGE_KEYS.NOTES);
-      notes = storedNotes ? JSON.parse(storedNotes) : [...DEFAULT_NOTES];
+      if (storedNotes === null) {
+        // First visit with no saved notes: populate with demo notes
+        notes = JSON.parse(JSON.stringify(DEFAULT_NOTES));
+        saveNotes();
+      } else {
+        try {
+          const parsedNotes = JSON.parse(storedNotes);
+          notes = Array.isArray(parsedNotes) ? parsedNotes : JSON.parse(JSON.stringify(DEFAULT_NOTES));
+        } catch (e) {
+          notes = JSON.parse(JSON.stringify(DEFAULT_NOTES));
+          saveNotes();
+        }
+      }
 
       const storedChecklist = localStorage.getItem(STORAGE_KEYS.CHECKLIST);
-      checklist = storedChecklist ? JSON.parse(storedChecklist) : [...DEFAULT_CHECKLIST];
+      if (storedChecklist === null) {
+        checklist = JSON.parse(JSON.stringify(DEFAULT_CHECKLIST));
+        saveChecklist();
+      } else {
+        try {
+          checklist = JSON.parse(storedChecklist);
+        } catch (e) {
+          checklist = JSON.parse(JSON.stringify(DEFAULT_CHECKLIST));
+        }
+      }
 
       const storedActivity = localStorage.getItem(STORAGE_KEYS.ACTIVITY);
-      activity = storedActivity ? JSON.parse(storedActivity) : [...DEFAULT_ACTIVITY];
+      if (storedActivity === null) {
+        activity = JSON.parse(JSON.stringify(DEFAULT_ACTIVITY));
+        saveActivity();
+      } else {
+        try {
+          activity = JSON.parse(storedActivity);
+        } catch (e) {
+          activity = JSON.parse(JSON.stringify(DEFAULT_ACTIVITY));
+        }
+      }
 
       const storedActivityFilter = localStorage.getItem(STORAGE_KEYS.ACTIVITY_FILTER);
       if (storedActivityFilter && ['all', 'created', 'edited', 'moved', 'completed', 'deleted'].includes(storedActivityFilter)) {
@@ -390,13 +432,15 @@
       }
     } catch (e) {
       console.warn('Error loading localStorage:', e);
-      tasks = [...DEFAULT_TASKS];
+      tasks = JSON.parse(JSON.stringify(DEFAULT_TASKS));
       deadline = new Date(DEFAULT_DEADLINE_ISO);
-      notes = [...DEFAULT_NOTES];
-      checklist = [...DEFAULT_CHECKLIST];
-      activity = [...DEFAULT_ACTIVITY];
+      notes = JSON.parse(JSON.stringify(DEFAULT_NOTES));
+      checklist = JSON.parse(JSON.stringify(DEFAULT_CHECKLIST));
+      activity = JSON.parse(JSON.stringify(DEFAULT_ACTIVITY));
       activityFilter = 'all';
       reminders = [];
+      saveTasks();
+      saveNotes();
     }
   }
 
@@ -464,6 +508,7 @@
         notes = JSON.parse(JSON.stringify(DEFAULT_NOTES));
         checklist = JSON.parse(JSON.stringify(DEFAULT_CHECKLIST));
         activity = JSON.parse(JSON.stringify(DEFAULT_ACTIVITY));
+        activityFilter = 'all';
         reminders = [];
 
         saveTasks();
@@ -471,6 +516,7 @@
         saveNotes();
         saveChecklist();
         saveActivity();
+        saveActivityFilter();
         saveReminders();
 
         renderAll();
