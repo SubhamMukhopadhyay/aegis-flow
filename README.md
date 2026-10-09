@@ -12,9 +12,9 @@ Aegis Flow is a modern, liquid command center designed for agile teams, fast spr
 
 Aegis Flow was conceived and developed during the hackathon using **Wispr Flow** by **Team Kohinoor**:
 
-- **Subham**: Built the project entirely by voice on his Wispr account, authoring the application logic, interface structure, and design hands-free.
-- **Karthik**: Posted the code to GitHub, managed version control, and handled project deployments.
-- **Shradhi**: Recorded, directed, and produced the product demonstration video showcasing the features in action.
+- **Subham Mukhopadhyay**: Built the project entirely by voice on his Wispr account, authoring the application logic, interface structure, and design hands-free.
+- **Kumar Kartikey**: Posted the code to GitHub, managed version control, and handled project deployments.
+- **Sharandeep Singh**: Recorded, directed, and produced the product demonstration video showcasing the features in action.
 
 ---
 
@@ -58,8 +58,8 @@ No external dependencies, package managers, or build steps required.
 ## 👥 Team Kohinoor
 
 - **Subham Mukhopadhyay**
-- **Karthik**
-- **Shradhi**
+- **Kumar Kartikey**
+- **Sharandeep Singh**
 
 ---
 
