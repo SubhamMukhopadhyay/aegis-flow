@@ -236,6 +236,7 @@
     // Activity
     activityStreamContainer: document.getElementById('activityStreamContainer'),
     clearActivityBtn: document.getElementById('clearActivityBtn'),
+    exportActivityBtn: document.getElementById('exportActivityBtn'),
 
     // Command Palette
     commandPalette: document.getElementById('commandPalette'),
@@ -1330,6 +1331,30 @@
     });
   }
 
+  function exportActivityFeed() {
+    if (!activity || activity.length === 0) {
+      showToast('Activity feed is empty', 'toast-warning');
+      return;
+    }
+
+    try {
+      const payload = JSON.stringify(activity, null, 2);
+      const blob = new Blob([payload], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `aegis-activity-feed-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Activity feed exported as JSON', 'toast-success');
+    } catch (err) {
+      console.error('Export error:', err);
+      showToast('Failed to export activity feed', 'toast-danger');
+    }
+  }
+
   // --- COUNTDOWN TIMER (OCTOBER 6, 2026, 23:59:59 GMT+5:30) ---
   function startCountdownTimer() {
     updateCountdownTick();
@@ -1436,6 +1461,7 @@
     { id: 'act-deadline', group: 'Actions', title: 'Edit Countdown Deadline...', icon: '📅', run: openEditDeadlineModal },
     { id: 'act-filter-urgent', group: 'Filters', title: 'Filter Urgent / High Priority Tasks', icon: '🔥', run: () => setFilter('urgent') },
     { id: 'act-filter-all', group: 'Filters', title: 'Show All Tasks', icon: '👁️', run: () => setFilter('all') },
+    { id: 'act-export-activity', group: 'Actions', title: 'Export Activity Stream as JSON', icon: '📥', run: exportActivityFeed },
     { id: 'act-reset-demo', group: 'Danger Zone', title: 'Reset Demo State to Default', icon: '↺', run: resetToDefaults }
   ];
 
@@ -2169,6 +2195,11 @@
       renderActivity();
       showToast('Activity stream cleared', 'toast-info');
     });
+
+    // Export Activity Feed
+    if (dom.exportActivityBtn) {
+      dom.exportActivityBtn.addEventListener('click', exportActivityFeed);
+    }
 
     // Activity Filter Pills
     document.querySelectorAll('[data-activity-filter]').forEach(pill => {
