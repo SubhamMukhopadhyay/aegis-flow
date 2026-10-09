@@ -124,6 +124,15 @@
       priority: 'urgent',
       tag: 'Backend',
       assignee: 'Kartik'
+    },
+    {
+      id: 'task-11',
+      title: 'Deploy final sprint release',
+      description: 'Trigger production edge deployment, verify domain certificates, and lock final release build.',
+      status: 'todo',
+      priority: 'urgent',
+      tag: 'Backend',
+      assignee: 'Subham'
     }
   ];
 
@@ -445,6 +454,13 @@
             const task10 = DEFAULT_TASKS.find(t => t.id === 'task-10');
             if (task10) {
               tasks.push(JSON.parse(JSON.stringify(task10)));
+              updatedAssignees = true;
+            }
+          }
+          if (!tasks.some(t => t.id === 'task-11')) {
+            const task11 = DEFAULT_TASKS.find(t => t.id === 'task-11');
+            if (task11) {
+              tasks.push(JSON.parse(JSON.stringify(task11)));
               updatedAssignees = true;
             }
           }

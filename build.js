@@ -24,8 +24,8 @@ if (!css.includes('.board-filter-toolbar')) throw new Error('Missing board-filte
 console.log('✓ Verifying sprint tasks for Subham and Kartik...');
 const js = fs.readFileSync(path.join(__dirname, 'js', 'script.js'), 'utf8');
 
-if (!js.includes('task-8') || !js.includes('task-9') || !js.includes('task-10')) {
-  throw new Error('Missing task-8, task-9, or task-10 definition');
+if (!js.includes('task-8') || !js.includes('task-9') || !js.includes('task-10') || !js.includes('task-11')) {
+  throw new Error('Missing task-8, task-9, task-10, or task-11 definition');
 }
 
 // Check task details
@@ -36,6 +36,10 @@ const hasEdisflowUrgent = js.includes("title: 'Launch Edisflow Sprint'") &&
   js.includes("priority: 'urgent'") &&
   js.includes("status: 'todo'") &&
   js.includes("assignee: 'Kartik'");
+const hasDeploySprintUrgent = js.includes("title: 'Deploy final sprint release'") &&
+  js.includes("id: 'task-11'") &&
+  js.includes("priority: 'urgent'") &&
+  js.includes("status: 'todo'");
 
 if (!hasSubhamHigh || !hasKartikHigh) {
   throw new Error('Tasks not properly assigned to Subham and Kartik');
@@ -43,8 +47,12 @@ if (!hasSubhamHigh || !hasKartikHigh) {
 if (!hasEdisflowUrgent) {
   throw new Error('Task 10 (Launch Edisflow Sprint) is not properly configured with urgent priority for Kartik');
 }
+if (!hasDeploySprintUrgent) {
+  throw new Error('Task 11 (Deploy final sprint release) is not properly configured with urgent priority');
+}
 
 console.log('✓ Task 8: Subham (Priority: High) verified.');
 console.log('✓ Task 9: Kartik (Priority: High) verified.');
 console.log('✓ Task 10: Kartik - Launch Edisflow Sprint (Priority: Urgent, Status: To Do) verified.');
+console.log('✓ Task 11: Deploy final sprint release (Priority: Urgent, Status: To Do) verified.');
 console.log('\n✨ BUILD SUCCESSFUL: All assets and sprint tasks verified ready for production.');
