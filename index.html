@@ -584,6 +584,17 @@
             <button id="clearActivityBtn" class="ghost-subtle-btn btn-sm">Clear Feed</button>
           </div>
 
+          <div class="activity-filter-toolbar">
+            <div class="filter-pill-container" id="activityFilterContainer" role="tablist" aria-label="Filter activity stream">
+              <button class="filter-pill active" data-activity-filter="all">All</button>
+              <button class="filter-pill" data-activity-filter="created">Created</button>
+              <button class="filter-pill" data-activity-filter="edited">Edited</button>
+              <button class="filter-pill" data-activity-filter="moved">Moved</button>
+              <button class="filter-pill" data-activity-filter="completed">Completed</button>
+              <button class="filter-pill" data-activity-filter="deleted">Deleted</button>
+            </div>
+          </div>
+
           <div class="activity-stream-list" id="activityStreamContainer">
             <!-- Injected via JavaScript -->
           </div>

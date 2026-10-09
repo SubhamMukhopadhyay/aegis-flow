@@ -25,6 +25,7 @@
     NOTES: 'aegis_notes_v3',
     CHECKLIST: 'aegis_checklist_v3',
     ACTIVITY: 'aegis_activity_v3',
+    ACTIVITY_FILTER: 'aegis_activity_filter_v1',
     REMINDERS: 'aegis_reminders_v1'
   };
 
@@ -134,10 +135,10 @@
   ];
 
   const DEFAULT_ACTIVITY = [
-    { id: 'act-1', text: 'System initialized sprint pipeline <strong>v4.2</strong>', type: 'cyan', time: '10m ago' },
-    { id: 'act-2', text: 'Task <strong>Integrate real-time streaming LLM</strong> moved to <strong>Review</strong>', type: 'violet', time: '25m ago' },
-    { id: 'act-3', text: 'Milestone <strong>Core Engine Build</strong> marked as completed', type: 'emerald', time: '1h ago' },
-    { id: 'act-4', text: 'Target deadline synchronized to <strong>Oct 6, 2026, 23:59 GMT+5:30</strong>', type: 'amber', time: '2h ago' }
+    { id: 'act-1', text: 'System initialized sprint pipeline <strong>v4.2</strong>', type: 'cyan', time: '10m ago', action: 'created' },
+    { id: 'act-2', text: 'Task <strong>Integrate real-time streaming LLM</strong> moved to <strong>Review</strong>', type: 'violet', time: '25m ago', action: 'moved' },
+    { id: 'act-3', text: 'Milestone <strong>Core Engine Build</strong> marked as completed', type: 'emerald', time: '1h ago', action: 'completed' },
+    { id: 'act-4', text: 'Target deadline synchronized to <strong>Oct 6, 2026, 23:59 GMT+5:30</strong>', type: 'amber', time: '2h ago', action: 'edited' }
   ];
 
   // --- STATE ---
@@ -149,6 +150,7 @@
   let deadline = null;
   let countdownInterval = null;
   let activeFilter = 'all';
+  let activityFilter = 'all';
   let searchQuery = '';
   let pendingConfirmAction = null;
 
@@ -370,6 +372,14 @@
 
       const storedActivity = localStorage.getItem(STORAGE_KEYS.ACTIVITY);
       activity = storedActivity ? JSON.parse(storedActivity) : [...DEFAULT_ACTIVITY];
+
+      const storedActivityFilter = localStorage.getItem(STORAGE_KEYS.ACTIVITY_FILTER);
+      if (storedActivityFilter && ['all', 'created', 'edited', 'moved', 'completed', 'deleted'].includes(storedActivityFilter)) {
+        activityFilter = storedActivityFilter;
+      } else {
+        activityFilter = 'all';
+      }
+
       try {
         const storedReminders = localStorage.getItem(STORAGE_KEYS.REMINDERS);
         reminders = storedReminders ? JSON.parse(storedReminders) : [];
@@ -384,6 +394,7 @@
       notes = [...DEFAULT_NOTES];
       checklist = [...DEFAULT_CHECKLIST];
       activity = [...DEFAULT_ACTIVITY];
+      activityFilter = 'all';
       reminders = [];
     }
   }
@@ -408,16 +419,32 @@
     try { localStorage.setItem(STORAGE_KEYS.ACTIVITY, JSON.stringify(activity)); } catch (e) { console.error(e); }
   }
 
+  function saveActivityFilter() {
+    try { localStorage.setItem(STORAGE_KEYS.ACTIVITY_FILTER, activityFilter); } catch (e) { console.error(e); }
+  }
+
   function saveReminders() {
     try { localStorage.setItem(STORAGE_KEYS.REMINDERS, JSON.stringify(reminders)); } catch (e) { console.error(e); }
   }
 
-  function logActivity(text, type = 'cyan') {
+  function inferActivityAction(text) {
+    const raw = (text || '').toLowerCase();
+    if (raw.includes('created') || raw.includes('initialized')) return 'created';
+    if (raw.includes('deleted') || raw.includes('removed')) return 'deleted';
+    if (raw.includes('completed') || raw.includes('verified') || raw.includes('marked as completed') || raw.includes('to <strong>done</strong>')) return 'completed';
+    if (raw.includes('moved') || raw.includes('stepped')) return 'moved';
+    if (raw.includes('updated') || raw.includes('synchronized') || raw.includes('edited') || raw.includes('unchecked')) return 'edited';
+    return 'edited';
+  }
+
+  function logActivity(text, type = 'cyan', action = null) {
+    const resolvedAction = action || inferActivityAction(text);
     const newEntry = {
       id: 'act-' + Date.now(),
       text,
       type,
-      time: 'Just now'
+      time: 'Just now',
+      action: resolvedAction
     };
     activity.unshift(newEntry);
     if (activity.length > 20) activity.pop();
@@ -889,7 +916,7 @@
     renderKanban();
     renderMetrics();
 
-    logActivity(`Moved task <strong>${escapeHtml(task.title.substring(0, 32))}</strong> to <strong>${formatStatusName(newStatus)}</strong>`, 'cyan');
+    logActivity(`Moved task <strong>${escapeHtml(task.title.substring(0, 32))}</strong> to <strong>${formatStatusName(newStatus)}</strong>`, newStatus === 'done' ? 'emerald' : 'cyan', newStatus === 'done' ? 'completed' : 'moved');
     showToast(`Task moved to ${formatStatusName(newStatus)}`, 'toast-info');
   }
 
@@ -907,7 +934,7 @@
       renderKanban();
       renderMetrics();
 
-      logActivity(`Stepped task <strong>${escapeHtml(task.title.substring(0, 32))}</strong> to <strong>${formatStatusName(task.status)}</strong>`, 'violet');
+      logActivity(`Stepped task <strong>${escapeHtml(task.title.substring(0, 32))}</strong> to <strong>${formatStatusName(task.status)}</strong>`, task.status === 'done' ? 'emerald' : 'violet', task.status === 'done' ? 'completed' : 'moved');
       showToast(`Task moved to ${formatStatusName(task.status)}`, 'toast-info');
     }
   }
@@ -929,7 +956,7 @@
         renderKanban();
         renderMetrics();
 
-        logActivity(`Deleted task <strong>${escapeHtml(task.title.substring(0, 32))}</strong>`, 'rose');
+        logActivity(`Deleted task <strong>${escapeHtml(task.title.substring(0, 32))}</strong>`, 'rose', 'deleted');
         showToast('Task removed from sprint board', 'toast-danger');
       }
     });
@@ -988,7 +1015,7 @@
         task.tag = tag;
         task.assignee = assignee;
 
-        logActivity(`Updated task <strong>${escapeHtml(task.title.substring(0, 32))}</strong>`, 'cyan');
+        logActivity(`Updated task <strong>${escapeHtml(task.title.substring(0, 32))}</strong>`, status === 'done' ? 'emerald' : 'cyan', status === 'done' ? 'completed' : 'edited');
         showToast('Task updated successfully', 'toast-success');
       }
     } else {
@@ -1002,7 +1029,7 @@
         assignee
       };
       tasks.push(newTask);
-      logActivity(`Created new task <strong>${escapeHtml(newTask.title.substring(0, 32))}</strong>`, 'emerald');
+      logActivity(`Created new task <strong>${escapeHtml(newTask.title.substring(0, 32))}</strong>`, status === 'done' ? 'emerald' : 'emerald', status === 'done' ? 'completed' : 'created');
       showToast('Task added to sprint pipeline', 'toast-success');
     }
 
@@ -1076,7 +1103,7 @@
         item.completed = !item.completed;
         saveChecklist();
         renderReadiness();
-        logActivity(`${item.completed ? 'Verified' : 'Unchecked'} deliverable: <strong>${escapeHtml(item.label)}</strong>`, item.completed ? 'emerald' : 'amber');
+        logActivity(`${item.completed ? 'Verified' : 'Unchecked'} deliverable: <strong>${escapeHtml(item.label)}</strong>`, item.completed ? 'emerald' : 'amber', item.completed ? 'completed' : 'edited');
         showToast(`Updated deliverable: ${item.label}`, 'toast-info');
       });
 
@@ -1199,7 +1226,7 @@
         note.content = content;
         note.color = color;
         note.isPinned = isPinned;
-        logActivity(`Updated note: <strong>${escapeHtml(note.title.substring(0, 32))}</strong>`, 'violet');
+        logActivity(`Updated note: <strong>${escapeHtml(note.title.substring(0, 32))}</strong>`, 'violet', 'edited');
         showToast('Note updated', 'toast-success');
       }
     } else {
@@ -1212,7 +1239,7 @@
         date: dateStr
       };
       notes.unshift(newNote);
-      logActivity(`Created note: <strong>${escapeHtml(newNote.title.substring(0, 32))}</strong>`, 'magenta');
+      logActivity(`Created note: <strong>${escapeHtml(newNote.title.substring(0, 32))}</strong>`, 'magenta', 'created');
       showToast('Quick note created', 'toast-success');
     }
 
@@ -1243,15 +1270,31 @@
         notes = notes.filter(n => n.id !== noteId);
         saveNotes();
         renderNotes();
-        logActivity(`Deleted note: <strong>${escapeHtml(note.title.substring(0, 32))}</strong>`, 'rose');
+        logActivity(`Deleted note: <strong>${escapeHtml(note.title.substring(0, 32))}</strong>`, 'rose', 'deleted');
         showToast('Note removed from scratchpad', 'toast-danger');
       }
     });
   }
 
+  function updateActivityFilterUI() {
+    const pills = document.querySelectorAll('[data-activity-filter]');
+    pills.forEach(pill => {
+      const pillFilter = pill.getAttribute('data-activity-filter');
+      pill.classList.toggle('active', pillFilter === activityFilter);
+    });
+  }
+
+  function setActivityFilter(filterName) {
+    activityFilter = filterName;
+    saveActivityFilter();
+    renderActivity();
+    showToast(`Activity filter: ${filterName.toUpperCase()}`, 'toast-info');
+  }
+
   // --- ACTIVITY FEED RENDERING ---
   function renderActivity() {
     dom.activityStreamContainer.innerHTML = '';
+    updateActivityFilterUI();
 
     if (activity.length === 0) {
       const emptyRow = document.createElement('div');
@@ -1261,7 +1304,21 @@
       return;
     }
 
-    activity.forEach(item => {
+    const filtered = activity.filter(item => {
+      if (activityFilter === 'all') return true;
+      const act = item.action || inferActivityAction(item.text);
+      return act === activityFilter;
+    });
+
+    if (filtered.length === 0) {
+      const emptyRow = document.createElement('div');
+      emptyRow.className = 'empty-col-notice';
+      emptyRow.textContent = `No "${activityFilter}" activity recorded yet`;
+      dom.activityStreamContainer.appendChild(emptyRow);
+      return;
+    }
+
+    filtered.forEach(item => {
       const row = document.createElement('div');
       row.className = 'activity-row';
       row.innerHTML = `
@@ -1352,7 +1409,7 @@
     updateDeadlineDisplay();
     updateCountdownTick();
 
-    logActivity(`Deadline synchronized to <strong>${newDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</strong>`, 'amber');
+    logActivity(`Deadline synchronized to <strong>${newDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</strong>`, 'amber', 'edited');
     showToast('Countdown deadline updated!', 'toast-success');
   }
 
@@ -2111,6 +2168,14 @@
       saveActivity();
       renderActivity();
       showToast('Activity stream cleared', 'toast-info');
+    });
+
+    // Activity Filter Pills
+    document.querySelectorAll('[data-activity-filter]').forEach(pill => {
+      pill.addEventListener('click', () => {
+        const filterName = pill.getAttribute('data-activity-filter');
+        if (filterName) setActivityFilter(filterName);
+      });
     });
 
     // Close modals on clicking overlay backdrop
