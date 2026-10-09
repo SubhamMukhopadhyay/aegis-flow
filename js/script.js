@@ -6,7 +6,7 @@
  * - Dynamic Canvas Ambient Fluid System with slow atmospheric drift
  * - Raycast-Style Command Palette (Ctrl+K or /) with keyboard navigation
  * - 4-Column Kanban Pipeline (To Do, In Progress, Review, Done) with Drag & Drop
- * - Real-time countdown targeting October 6, 2026, 23:59:59 GMT+5:30
+ * - Real-time countdown targeting October 10, 2026, 23:59:59 GMT+5:30
  * - Horizontal Hackathon milestone schedule
  * - Interactive Demo Readiness checklist
  * - Quick Notes workspace with pinning and color swatches
@@ -29,8 +29,8 @@
     REMINDERS: 'aegis_reminders_v1'
   };
 
-  // --- DEFAULT DEADLINE: OCTOBER 6, 2026 AT 23:59:59 GMT+5:30 ---
-  const DEFAULT_DEADLINE_ISO = '2026-10-06T23:59:59+05:30';
+  // --- DEFAULT DEADLINE: OCTOBER 10, 2026 AT 23:59:59 GMT+5:30 ---
+  const DEFAULT_DEADLINE_ISO = '2026-10-10T23:59:59+05:30';
 
   // --- DEFAULT SAMPLE DATA ---
   const DEFAULT_TASKS = [
@@ -138,7 +138,7 @@
     { id: 'act-1', text: 'System initialized sprint pipeline <strong>v4.2</strong>', type: 'cyan', time: '10m ago', action: 'created' },
     { id: 'act-2', text: 'Task <strong>Integrate real-time streaming LLM</strong> moved to <strong>Review</strong>', type: 'violet', time: '25m ago', action: 'moved' },
     { id: 'act-3', text: 'Milestone <strong>Core Engine Build</strong> marked as completed', type: 'emerald', time: '1h ago', action: 'completed' },
-    { id: 'act-4', text: 'Target deadline synchronized to <strong>Oct 6, 2026, 23:59 GMT+5:30</strong>', type: 'amber', time: '2h ago', action: 'edited' }
+    { id: 'act-4', text: 'Target deadline synchronized to <strong>Oct 10, 2026, 23:59 GMT+5:30</strong>', type: 'amber', time: '2h ago', action: 'edited' }
   ];
 
   // --- STATE ---
@@ -375,7 +375,12 @@
       }
 
       const storedDeadline = localStorage.getItem(STORAGE_KEYS.DEADLINE);
-      deadline = storedDeadline ? new Date(storedDeadline) : new Date(DEFAULT_DEADLINE_ISO);
+      if (!storedDeadline || storedDeadline.startsWith('2026-10-06')) {
+        deadline = new Date(DEFAULT_DEADLINE_ISO);
+        saveDeadline();
+      } else {
+        deadline = new Date(storedDeadline);
+      }
 
       const storedNotes = localStorage.getItem(STORAGE_KEYS.NOTES);
       if (storedNotes === null) {
@@ -1401,7 +1406,7 @@
     }
   }
 
-  // --- COUNTDOWN TIMER (OCTOBER 6, 2026, 23:59:59 GMT+5:30) ---
+  // --- COUNTDOWN TIMER (OCTOBER 10, 2026, 23:59:59 GMT+5:30) ---
   function startCountdownTimer() {
     updateCountdownTick();
     if (countdownInterval) clearInterval(countdownInterval);
