@@ -213,8 +213,9 @@
 
     // Kanban Board
     boardQuickAddTaskBtn: document.getElementById('boardQuickAddTaskBtn'),
+    exportTasksBtn: document.getElementById('exportTasksBtn'),
     filterCountAll: document.getElementById('filterCountAll'),
-    filterPills: document.querySelectorAll('.filter-pill'),
+    filterPills: document.querySelectorAll('.board-filter-toolbar .filter-pill'),
     countTodo: document.getElementById('count-todo'),
     countInProgress: document.getElementById('count-in-progress'),
     countReview: document.getElementById('count-review'),
@@ -819,7 +820,7 @@
     if (columnTasks.length === 0) {
       const emptyDiv = document.createElement('div');
       emptyDiv.className = 'empty-col-notice';
-      emptyDiv.textContent = searchQuery ? 'No matching tasks' : 'No tasks in this stage';
+      emptyDiv.textContent = searchQuery ? 'No matching tasks' : activeFilter !== 'all' ? `No ${activeFilter} tasks in this stage` : 'No tasks in this stage';
       container.appendChild(emptyDiv);
       return;
     }
@@ -1062,7 +1063,10 @@
     e.preventDefault();
 
     const title = dom.taskTitleInput.value.trim();
-    if (!title) return;
+    if (!title) {
+      showToast('Please enter a task title', 'toast-warning');
+      return;
+    }
 
     const id = dom.taskFormId.value;
     const description = dom.taskDescInput.value.trim();
@@ -1428,20 +1432,78 @@
     }
 
     try {
-      const payload = JSON.stringify(activity, null, 2);
+      const itemsToExport = activityFilter === 'all'
+        ? activity
+        : activity.filter(item => (item.action || inferActivityAction(item.text)) === activityFilter);
+
+      if (itemsToExport.length === 0) {
+        showToast(`No "${activityFilter}" activities to export`, 'toast-warning');
+        return;
+      }
+
+      const payload = JSON.stringify(itemsToExport, null, 2);
       const blob = new Blob([payload], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `aegis-activity-feed-${new Date().toISOString().slice(0, 10)}.json`;
+      const filterSuffix = activityFilter === 'all' ? '' : `-${activityFilter}`;
+      a.download = `aegis-activity-feed${filterSuffix}-${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 200);
-      showToast('Activity feed exported as JSON', 'toast-success');
+      showToast(activityFilter === 'all' ? 'Activity feed exported as JSON' : `Filtered (${activityFilter.toUpperCase()}) activity exported as JSON`, 'toast-success');
     } catch (err) {
       console.error('Export error:', err);
       showToast('Failed to export activity feed', 'toast-danger');
+    }
+  }
+
+  function exportTasksJSON() {
+    if (!tasks || tasks.length === 0) {
+      showToast('No sprint tasks to export', 'toast-warning');
+      return;
+    }
+
+    try {
+      const query = searchQuery.trim().toLowerCase();
+      const itemsToExport = tasks.filter(task => {
+        const matchesSearch = !query ||
+          task.title.toLowerCase().includes(query) ||
+          (task.description && task.description.toLowerCase().includes(query)) ||
+          (task.tag && task.tag.toLowerCase().includes(query)) ||
+          (task.assignee && task.assignee.toLowerCase().includes(query));
+
+        if (!matchesSearch) return false;
+
+        if (activeFilter === 'urgent') return task.priority === 'urgent' || task.priority === 'high';
+        if (activeFilter === 'frontend') return (task.tag || '').toLowerCase() === 'frontend';
+        if (activeFilter === 'backend') return (task.tag || '').toLowerCase().includes('backend') || (task.tag || '').toLowerCase().includes('ai');
+        if (activeFilter === 'pitch') return (task.tag || '').toLowerCase().includes('pitch');
+
+        return true;
+      });
+
+      if (itemsToExport.length === 0) {
+        showToast('No matching tasks to export', 'toast-warning');
+        return;
+      }
+
+      const payload = JSON.stringify(itemsToExport, null, 2);
+      const blob = new Blob([payload], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const filterSuffix = activeFilter === 'all' ? '' : `-${activeFilter}`;
+      a.download = `aegis-sprint-tasks${filterSuffix}-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 200);
+      showToast(activeFilter === 'all' ? 'All sprint tasks exported as JSON' : `Filtered (${activeFilter.toUpperCase()}) tasks exported as JSON`, 'toast-success');
+    } catch (err) {
+      console.error('Export tasks error:', err);
+      showToast('Failed to export sprint tasks', 'toast-danger');
     }
   }
 
@@ -1551,6 +1613,7 @@
     { id: 'act-deadline', group: 'Actions', title: 'Edit Countdown Deadline...', icon: '📅', run: openEditDeadlineModal },
     { id: 'act-filter-urgent', group: 'Filters', title: 'Filter Urgent / High Priority Tasks', icon: '🔥', run: () => setFilter('urgent') },
     { id: 'act-filter-all', group: 'Filters', title: 'Show All Tasks', icon: '👁️', run: () => setFilter('all') },
+    { id: 'act-export-tasks', group: 'Actions', title: 'Export Sprint Tasks as JSON', icon: '📋', run: exportTasksJSON },
     { id: 'act-export-activity', group: 'Actions', title: 'Export Activity Stream as JSON', icon: '📥', run: exportActivityFeed },
     { id: 'act-clear-activity', group: 'Actions', title: 'Clear Activity Stream Feed', icon: '🧹', run: clearActivityFeed },
     { id: 'act-reset-demo', group: 'Danger Zone', title: 'Reset Demo State to Default', icon: '↺', run: resetToDefaults }
@@ -2229,15 +2292,18 @@
       });
     });
 
-    // Filter Pills
+    // Board Filter Pills
     dom.filterPills.forEach(pill => {
       pill.addEventListener('click', () => {
-        dom.filterPills.forEach(p => p.classList.remove('active'));
-        pill.classList.add('active');
-        activeFilter = pill.getAttribute('data-filter');
-        renderKanban();
+        const filterName = pill.getAttribute('data-filter') || 'all';
+        setFilter(filterName);
       });
     });
+
+    // Export Sprint Tasks
+    if (dom.exportTasksBtn) {
+      dom.exportTasksBtn.addEventListener('click', exportTasksJSON);
+    }
 
     // Notes triggers
     dom.openNewNoteModalBtn.addEventListener('click', openCreateNoteModal);

@@ -149,7 +149,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .section-lead-text{color:var(--text-secondary);font-size:var(--type-13)}
 
 /* WORK task groups */
-.board-filter-toolbar{gap:var(--space-3)}
+.board-filter-toolbar{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)}
+.board-actions-group{display:flex;align-items:center;gap:var(--space-2)}
 .filter-pill-container{gap:var(--space-2)}
 .filter-pill{min-height:36px;padding-inline:var(--space-3);border-radius:var(--radius-pill);font-size:var(--type-12);color:var(--text-secondary)}
 .filter-pill.active{border-color:var(--line-strong);background:var(--accent-soft);color:var(--text)}

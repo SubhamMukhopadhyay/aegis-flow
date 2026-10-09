@@ -437,20 +437,30 @@
 
             <!-- Board Controls & Filter Group -->
             <div class="board-filter-toolbar">
-              <div class="filter-pill-container" role="tablist">
-                <button class="filter-pill active" data-filter="all">All (<span id="filterCountAll">0</span>)</button>
-                <button class="filter-pill" data-filter="urgent">Urgent</button>
-                <button class="filter-pill" data-filter="frontend">Frontend</button>
-                <button class="filter-pill" data-filter="backend">Backend & AI</button>
-                <button class="filter-pill" data-filter="pitch">Pitch & Demo</button>
+              <div class="filter-pill-container" id="boardFilterContainer" role="tablist" aria-label="Filter sprint tasks">
+                <button type="button" class="filter-pill active" data-filter="all" role="tab" aria-selected="true">All (<span id="filterCountAll">0</span>)</button>
+                <button type="button" class="filter-pill" data-filter="urgent" role="tab" aria-selected="false">Urgent</button>
+                <button type="button" class="filter-pill" data-filter="frontend" role="tab" aria-selected="false">Frontend</button>
+                <button type="button" class="filter-pill" data-filter="backend" role="tab" aria-selected="false">Backend & AI</button>
+                <button type="button" class="filter-pill" data-filter="pitch" role="tab" aria-selected="false">Pitch & Demo</button>
               </div>
-              <button id="boardQuickAddTaskBtn" class="action-btn action-primary btn-sm">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                <span>Add Task</span>
-              </button>
+              <div class="board-actions-group">
+                <button id="exportTasksBtn" type="button" class="action-btn action-secondary btn-sm" title="Export sprint tasks as JSON">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>Export Tasks</span>
+                </button>
+                <button id="boardQuickAddTaskBtn" type="button" class="action-btn action-primary btn-sm">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span>Add Task</span>
+                </button>
+              </div>
             </div>
           </div>
 
